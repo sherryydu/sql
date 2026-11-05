@@ -184,10 +184,14 @@ Think a bit about the row counts: how many distinct vendors, product names are t
 How many customers are there (y). 
 Before your final group by you should have the product of those two queries (x*y).  */
 --QUERY 8
-
-
-
-
+SELECT CTE.vendor_name, CTE.product_name, SUM(CTE.price5) as total_product_price FROM
+(SELECT v.vendor_name, p.product_name, vi.original_price, 5 * vi.original_price as price5
+FROM vendor_inventory as vi
+LEFT JOIN product as p
+ON vi.product_id = p.product_id
+LEFT JOIN vendor as v
+ON vi.vendor_id = v.vendor_id GROUP BY vi.vendor_id, vi.product_id) as CTE
+CROSS JOIN customer GROUP BY CTE.vendor_name, CTE.product_name; 
 --END QUERY
 
 
