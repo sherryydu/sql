@@ -40,10 +40,12 @@ HINT: One of these approaches uses ROW_NUMBER() and one uses DENSE_RANK().
 Filter the visits to dates before April 29, 2022. */
 --QUERY 2 
 SELECT 
-	*,
-	ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY market_date, transaction_time) AS customer_visit_numbering
+	market_date,
+	customer_id,
+	ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY market_date) AS customer_visit_numbering
 FROM customer_purchases
-WHERE market_date < '2022-04-29';
+WHERE market_date < '2022-04-29'
+GROUP BY market_date;
 --END QUERY
 
 
