@@ -40,7 +40,7 @@ HINT: One of these approaches uses ROW_NUMBER() and one uses DENSE_RANK().
 Filter the visits to dates before April 29, 2022. */
 --QUERY 2 
 SELECT 
-market_date,
+	market_date,
 	customer_id,
 	ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY market_date ) AS customer_visit_numbering
 FROM
@@ -81,10 +81,7 @@ Filter the visits to dates before April 29, 2022. */
 --QUERY 4
 SELECT 
     *,
-    COUNT(product_id) OVER (
-        PARTITION BY customer_id, product_id
-        ORDER BY market_date, transaction_time
-    ) AS running_product_count
+    COUNT(product_id) OVER (PARTITION BY customer_id, product_id ORDER BY market_date, transaction_timeAS running_product_count
 FROM customer_purchases
 WHERE market_date < '2022-04-29';
 --END QUERY
@@ -106,7 +103,7 @@ SELECT
 	product_name,
 	CASE 
 	WHEN INSTR(product_name, '-') > 0 
-		THEN TRIM(SUBSTR(product_name, INSTR( product_name, '-') +1))
+		THEN TRIM(SUBSTR(product_name, INSTR(product_name, '-') +1))
 		ELSE NULL
 		END AS description
 FROM product;
@@ -190,14 +187,26 @@ Think a bit about the row counts: how many distinct vendors, product names are t
 How many customers are there (y). 
 Before your final group by you should have the product of those two queries (x*y).  */
 --QUERY 8
-SELECT CTE.vendor_name, CTE.product_name, SUM(CTE.price5) as total_product_price FROM
-(SELECT v.vendor_name, p.product_name, vi.original_price, 5 * vi.original_price as price5
-FROM vendor_inventory as vi
-LEFT JOIN product as p
-ON vi.product_id = p.product_id
-LEFT JOIN vendor as v
-ON vi.vendor_id = v.vendor_id GROUP BY vi.vendor_id, vi.product_id) as CTE
-CROSS JOIN customer GROUP BY CTE.vendor_name, CTE.product_name; 
+SELECT 
+	CTE.vendor_name, 
+	CTE.product_name, 
+	SUM(CTE.price5) as total_product_price 
+FROM
+	(SELECT 
+		v.vendor_name, 
+		p.product_name, 
+		vi.original_price, 
+		5 * vi.original_price as price5
+	FROM vendor_inventory as vi
+	LEFT JOIN product as p
+	ON vi.product_id = p.product_id
+	LEFT JOIN vendor as v
+	ON vi.vendor_id = v.vendor_id 
+	GROUP BY vi.vendor_id, vi.product_id) as CTE
+CROSS JOIN customer 
+GROUP BY 
+	CTE.vendor_name, 
+	CTE.product_name; 
 --END QUERY
 
 
@@ -222,10 +231,11 @@ FROM product_units;
 /*2. Using `INSERT`, add a new row to the product_units table (with an updated timestamp). 
 This can be any product you desire (e.g. add another record for Apple Pie). */
 --QUERY 10
-	INSERT INTO product_units VALUES (10, 'Eggs', 'Bakers dozen', 6, 'unit',CURRENT_TIMESTAMP);
-	SELECT *
-	FROM product_units;
+INSERT INTO product_units 
+VALUES (10, 'Eggs', 'Bakers dozen', 6, 'unit',CURRENT_TIMESTAMP);
 
+SELECT *
+FROM product_units;
 --END QUERY
 
 
@@ -265,9 +275,31 @@ Finally, make sure you have a WHERE statement to update the right row,
 When you have all of these components, you can run the update statement. */
 --QUERY 12
 
+ALTER TABLE product_units
+ADD current_quantity INT;
 
+CREATE TEMP TABLE LastInventory AS
+SELECT 
+    *,
+    ROW_NUMBER() OVER (
+        PARTITION BY product_id 
+        ORDER BY market_date DESC) 
+		AS last_updated_flag
+FROM vendor_inventory;
 
+-- SELECT *
+-- FROM (
+--     SELECT 
+--         *,
+--         ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY market_date DESC) AS last_updated_flag
+--     FROM customer_purchases
+-- )
+-- WHERE last_updated_flag = 1;
 
+UPDATE product_units AS pu
+SET current_quantity = COALESCE((SELECT LastInventory.quantity 
+								 FROM LastInventory
+								 WHERE LastInventory.product_id = pu.product_id AND last_updated_flag=1), 0);
 --END QUERY
 
 
