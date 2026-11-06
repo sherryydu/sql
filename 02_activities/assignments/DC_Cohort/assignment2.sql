@@ -81,7 +81,7 @@ Filter the visits to dates before April 29, 2022. */
 --QUERY 4
 SELECT 
     *,
-    COUNT(product_id) OVER (PARTITION BY customer_id, product_id ORDER BY market_date, transaction_timeAS running_product_count
+    COUNT(product_id) OVER (PARTITION BY customer_id, product_id ORDER BY market_date, transaction_time) AS running_product_count
 FROM customer_purchases
 WHERE market_date < '2022-04-29';
 --END QUERY
