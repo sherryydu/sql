@@ -57,7 +57,26 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 **HINT:** search type 1 vs type 2 slowly changing dimensions. 
 
 ```
-Your answer...
+For an architecture type of an CUSTOMER_ADDRESS table that will retain changes (AKA Type 1), I would propose having the following fields:
+CUSTOMER_ADDRESS (Type 1)
+- customer_id (this would be the FK to the customer_id in the customer table (PK))
+- street
+- city
+- postal_code
+- country
+
+The latter option (i.e., a table that will overwrite addresses. Type 2). I would put address_id first as the primary key and then have a start and end date for the address. If there is no end_date, then the current_flag would be coded as Y (for yes it's the customer's current address). If there is N, then it's not their current address.
+CUSTOMER_ADDRESS (Type 2)
+- address_id (PK in this table, but FK in the customer table)
+- customer_id
+- street
+- city
+- postal_code
+- country
+- start_date
+- end_date
+- current_flag
+
 ```
 
 ***
@@ -193,5 +212,5 @@ Consider, for example, concepts of labour, bias, LLM proliferation, moderating c
 
 
 ```
-Your thoughts...
+After reading Boykis’ 2019 article, “Neural nets are just people all the way down,” one ethical issue that is important to this story is bias. In particular, human bias is rife and riddled within training datasets. This is shown when Boykis (2019) discusses that some users who uploaded photos of themselves to ImageNet would be labelled as “nonsmoker” or “nerd.” While one would probably consider being labeled as a “nonsmoker” a compliment, being categorized as a “nerd” or other terms could potentially be considered offensive or hurtful. Furthermore, because humans must categorize these images, it begs to question what biases these workers might have in terms of categorizations and stereotypes. Ultimately, these workers all have lived experiences that can shape their perceptions of specific things. Speaking of workers, another key point is that there are workers who are paid very little to label or categorize images on ImageNet. Critically, ImageNet is built on the backs of people who are paid pennies to label images. As a result, these individuals may be more inclined to work quickly and act on their biases to categorize images for the sake of making more money. One final ethical issue is how they source images for ImageNet. Boykis (2019) states that ImageNet sources their images by essentially scraping search engines using specific search query strategies using WordNet synonyms. While the article does not necessarily go into specifics about this, I wonder a lot about image copyright and consent. If someone posts something, they might not be aware that it will end up on ImageNet or used to train as a dataset. Overall, this story shows that there are many ethical issues when it comes to training large datasets like ImageNet for machine learning.
 ```
