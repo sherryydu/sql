@@ -57,7 +57,26 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 **HINT:** search type 1 vs type 2 slowly changing dimensions. 
 
 ```
-Your answer...
+For an architecture type of an CUSTOMER_ADDRESS table that will retain changes (AKA Type 1), I would propose having the following fields:
+CUSTOMER_ADDRESS (Type 1)
+- customer_id (this would be the FK to the customer_id in the customer table (PK))
+- street
+- city
+- postal_code
+- country
+
+The latter option (i.e., a table that will overwrite addresses. Type 2). I would put address_id first as the primary key and then have a start and end date for the address. If there is no end_date, then the current_flag would be coded as Y (for yes it's the customer's current address). If there is N, then it's not their current address.
+CUSTOMER_ADDRESS (Type 2)
+- address_id (PK in this table, but FK in the customer table)
+- customer_id
+- street
+- city
+- postal_code
+- country
+- start_date
+- end_date
+- current_flag
+
 ```
 
 ***
